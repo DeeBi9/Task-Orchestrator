@@ -55,16 +55,21 @@
 <body>
     <h2>Task Orchestrator</h2>
     <div id="form-container">
-        <form action="#" id="form">
+        <form action="/register/user" id="form" method="post">
             <div id="components">
                 <div>
                     <label for="username" class="username">Username</label>
-                    <input type="text" required placeholder="Username">
+                    <input type="text" required placeholder="Username" name="username">
                 </div>
                 <br><br>
                 <div>
                     <label for="password" class="password">Password</label>
-                    <input type="password" required placeholder="********" minlength="8" >
+                    <input type="password" required placeholder="********" minlength="8" name="password" >
+                </div>
+                <br><br>
+                <div>
+                    <label for="password" class="password">Confirm Password</label>
+                    <input type="password" required placeholder="********" minlength="8" name="confpass" >
                 </div>
             </div>
             <div id="footer">
