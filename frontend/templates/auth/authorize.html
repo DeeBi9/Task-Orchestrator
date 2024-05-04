@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Orchestrator</title>
+    <style>
+        html {
+            background-color: black;
+        }
+        h2 {
+            color: #ffffff;
+            margin-left: 20px;
+        }
+        #form-container {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Add this line to center vertically */
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+            height: 100vh; /* Set the height to 100% of the viewport height for full-page centering */
+        }
+
+        #components , #footer{
+            margin: 30px;
+        }
+
+        ::placeholder {
+            font-size: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px; /* Increase the padding to make the input boxes larger */
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        input:valid{
+            border-color: black;
+        }
+        input:invalid{
+            border-color: red;
+        }
+
+        #button {
+            background-color: rgb(137, 137, 137);
+            border-radius: 8px 8px 8px 8px;
+            color: azure;
+        }
+    </style>
+</head>
+<body>
+    <h2>Task Orchestrator</h2>
+    <div id="form-container">
+        <form action="/register/user" id="form" method="post">
+            <div id="components">
+                <div>
+                    <label for="username" class="username">Username</label>
+                    <input type="text" required placeholder="Username" name="username">
+                </div>
+                <br><br>
+                <div>
+                    <label for="password" class="password">Password</label>
+                    <input type="password" required placeholder="********" minlength="8" name="password" >
+                </div>
+                <br><br>
+                <div>
+                    <label for="password" class="password">Confirm Password</label>
+                    <input type="password" required placeholder="********" minlength="8" name="confpass" >
+                </div>
+            </div>
+            <div id="footer">
+                <div id="button-container">
+                    <button type="submit" id="button">Sign UP</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</body>
+</html>
