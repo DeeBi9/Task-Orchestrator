@@ -1,0 +1,7 @@
+The job logic depends on the request sent by the 
+client in the json format 
+That is :
+data : {
+    command/job : 
+    time to live(TTL):
+}
