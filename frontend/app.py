@@ -1,100 +1,78 @@
-from flask import Flask, render_template, request
-import jwt
-import secrets
-import bcrypt
-import psycopg2
+from flask import Flask, render_template, request, redirect, url_for
+from utils import User, Database
+from userutils import UserData
 
 app = Flask(__name__)
-
-class User :
-    def __init__(self,username):
-        self.username = username
-        self.hashed_password
-        self.hashed_confpass
-        self.SECRET_KEY
-
-    def hash_pass(self,password,confpass):
-        salt = bcrypt.gensalt()
-        self.hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-        self.hashed_confpass = bcrypt.hashpw(confpass.encode('utf-8'),salt)
-        return self.hashed_password, self.hashed_confpass
-
-    def genpayload(self):
-        payload = {
-            'username': self.username,
-            'password': self.hashed_password,
-            'confirmed_password' : self.hashed_confpass,
-            # TTL (time to live for the token will be passed) --> later
-        }
-        return payload
-    
-    def gensecretkey():
-        secret_key = secrets.token_urlsafe(32)
-        return secret_key
-    
-    def gentoken(payload,secret_key):
-        token = jwt.encode(payload,secret_key,algorithm="HS256")
-        return token
-    
-class Database:
-    def __init__(self) -> None:
-        pass
-    
-    def connect():
-        conn = psycopg2.connect(
-            dbname="userdts",
-            user="postgres",
-            password="postgres",
-            host="localhost",
-            port="5432"
-        )
-
-        # Create a cursor object to execute SQL queries
-        cur = conn.cursor()
-
-        # Define your SQL query with WHERE clause to insert data
-        sql = "INSERT INTO your_table (column1, column2, column3) VALUES (%s, %s, %s) WHERE some_column = %s"
-
-        # Define the data to be inserted
-        data = ('value1', 'value2', 'value3', 'filter_value')
-
-        # Execute the SQL query
-        cur.execute(sql, data)
-
-        # Commit the transaction
-        conn.commit()
-
-        # Close the cursor and connection
-        cur.close()
-        conn.close()
 
 @app.route("/")
 def welcome():
     return "<p>Welcome</p>"
 
-@app.route("/register", )
+@app.route("/register")
 def authpage():
-    return render_template('auth.html')
+    return render_template('./auth/authorize.html')
 
-@app.route("/register/user",methods=['POST'])
+@app.route("/register/user", methods=['POST'])
 def register():
     USERNAME = request.form.get('username')
     PASSWORD = request.form.get('password')
     CONFPASS = request.form.get('confpass')
-    
-    if PASSWORD == CONFPASS:
-        user = User(username=USERNAME)
-        hashedpass , hashed_confpass = user.hash_pass(PASSWORD,CONFPASS)
-        payload = user.genpayload()
-        SECRET_KEY = user.gensecretkey()
-        token = user.gentoken(payload,SECRET_KEY)
-    else:
+
+    # Check if passwords match
+    if PASSWORD != CONFPASS:
         return "<p>Password doesn't match with the confirmed password</p>"
-    
 
+    # Check if username already exists in the database
+    db = Database()
+    db.connect()
+    cursor = db.conn.cursor()
+    cursor.execute(f"SELECT * FROM users WHERE username = '{USERNAME}'")
+    existing_user = cursor.fetchone()
+    cursor.close()
+    if existing_user:
+        return f"<p>{USERNAME} already exists</p>"
 
-    SECRET_KEY = secrets.token_urlsafe(32)
+    # Hash password
+    user = User(username=USERNAME)
+    hashedpass, hashed_confpass = user.hash_pass(PASSWORD, CONFPASS)
     
-    
+    # Generate token
+    payload = user.genpayload()
+    SECRET_KEY = user.gensecretkey()
+    token = user.gentoken(payload, SECRET_KEY)
+
+    try:
+        # Insert new user into the database
+        db.execute_query(f"INSERT INTO users (username, password) VALUES ('{USERNAME}', '{hashedpass.decode('utf-8')}')")
+        print("User registered successfully.")
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        db.close()
+
     print(token)
-    return "<p>Thanks</p>"
+    # Redirect to login page if registration is successful
+    return redirect(url_for('login'))
+
+
+@app.route("/login")
+def loginpage():
+    return render_template("./auth/login.html")
+
+@app.route("login/user")
+def login():
+
+    USERNAME = request.form.get('username')
+    PASSWORD = request.form.get('password')
+
+    # Create an instance userdata of the UserData class
+    userdata = UserData()
+
+    # Send the username to the connect to the postgres server
+    userdata.senddata(username=USERNAME)
+
+    #
+    cursor = userdata.conn.cursor()
+    cursor.execute(f"SELECT * FROM users WHERE username = '{USERNAME}'")
+    cursor.close()
+
