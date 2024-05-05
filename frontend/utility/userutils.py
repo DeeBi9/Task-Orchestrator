@@ -1,4 +1,5 @@
 import psycopg2
+
 class UserData:
     def __init__(self):
         self.conn = None
